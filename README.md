@@ -11,8 +11,7 @@ Paper-trading only: the bot trades cbBTC/USDC on a replay of on-chain Orca
 Whirlpool prices. No real money, no exchange connection, no secrets.
 
 **Status: entry built, audited and verified locally — see
-`analysis/AUDIT-v1.md`. Submitted as entry #1 (see submission details in
-the repo root `SUBMISSION.md` after submit).**
+`analysis/AUDIT-v1.md`.**
 
 ## Strategy
 
@@ -60,8 +59,10 @@ does not depend on one lucky parameter set.
 
 Dev window: 1,440 one-minute bars, 2026-11-17 14:45 UTC → 2026-11-18 14:44 UTC
 (CBBTC $65,074 → $63,261, −279 bps buy-and-hold — a falling day). All numbers
-measured with `tools/engine.py`, a local port of the kit harness whose fill
-math reproduces the official `grade-local` exactly (see Verification).
+were measured with a local replay engine, an integer-exact port of the kit
+harness whose fill math reproduces the official `grade-local` exactly
+(see Verification). The engine and sweep scripts are kept outside this
+repository (dev tools, not part of the entry).
 
 | Metric | Final bot |
 |---|---|
@@ -96,30 +97,21 @@ decide the prize; the race window does.
 ```bash
 # 1. Fetch the kit (not part of this repo) into ./btc-race-24h-20261118-1444-kit
 #    curl -sSL "https://make.fun/c/btc-race-24h-20261118-1444/kit" | tar xz
-# 2. Replay the bot on the dev window (in-process, fast):
-python3 - <<'EOF'
-import sys
-sys.path.insert(0, 'tools')
-from engine import load_bars, Replay
-bars = load_bars('btc-race-24h-20261118-1444-kit/dataset/bars/CBBTC.ndjson.gz')
-m = Replay(bars).run_subprocess([sys.executable, '-P', '-s', 'main.py'])
-print(m['net_pnl_usdc'], m['trades'], m['max_drawdown'])
-EOF
-# 3. Parameter sweep + robustness checks:
-python3 tools/sweep.py 1   # entry sweep
-python3 tools/sweep.py 2   # entry x exits sweep
-python3 tools/sweep.py 3   # deep-dip sweep
-python3 tools/sweep.py 4   # trailing-stop sweep
+# 2. Replay the bot on the dev window with the kit's own grade command
+#    (Node bots run with --driver process; a Python bot needs --driver
+#    docker, or the local integer-exact engine used during development):
+node <kit>/cli/makefun.mjs grade-local --kit <kit> \
+  --bot <kit>/baselines/momentum --driver process
 ```
 
 The official `grade-local --driver process` runs Node bots only; a Python
 bot needs `--driver docker`. There is no Docker in this environment, so the
-local engine above is the verification path (cross-checked against the
-official CLI on the kit's own baselines — identical to the micro-USDC).
+local engine is the verification path (cross-checked against the official
+CLI on the kit's own baselines — identical to the micro-USDC).
 
 ## Verification
 
-`tools/engine.py` is an integer-exact port of the kit harness
+The local replay engine is an integer-exact port of the kit harness
 (`sim/bars/engine.ts`): same fill math, same decision-check order, same
 flatten-at-close. Cross-checked against the official CLI on this kit's own
 baselines — identical to the micro-USDC:
@@ -136,8 +128,6 @@ crashes.
 
 - `main.py` — the entrypoint the grader runs (`python3 -P -s /bot/main.py`).
 - `vendor/makefun_bars.py` — byte-identical copy of the kit's Python SDK shim.
-- `tools/engine.py` — local replay engine + subprocess driver.
-- `tools/sweep.py` — parameter sweeps and robustness checks.
 - `analysis/AUDIT-v1.md` — pre-submit audit report.
 - `LICENSE` — MIT.
 

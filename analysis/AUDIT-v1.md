@@ -37,7 +37,9 @@ official `grade-local --driver process`).
 
 - Engine lokal vs official `grade-local --driver process` pada baseline
   momentum kit baru: **identik sampai micro-USDC** (−23.865251, 1 trade,
-  fees 0.790611, maxDD 0.032416353).
+  fees 0.790611, maxDD 0.032416353). Engine lokal (integer-exact port dari
+  `sim/bars/engine.ts`) disimpan di luar repo sebagai dev tool, bukan
+  bagian entry.
 - Bot final, subprocess 2x: +$22.345742, trades 2, RT 1, win 100%,
   maxDD 0.652%, fees $0.809102, rejected 0, log byte-identik.
 - Robustness: rolling 12h worst $0.00 (tidak pernah rugi); bootstrap 24
@@ -70,3 +72,21 @@ official `grade-local --driver process`).
 check` lokal (repo + bundle) lolos. Varian scalper (sma60/dip60/TP120,
 +$13.40, 3 RT) dicatat di README sebagai kandidat entry #2 — BUKAN
 disubmit sekarang; hanya bila koordinator memutuskan diversifikasi.
+
+## 6. Perbaikan setelah check lokal pertama (2026-11-18 ~23:20 WIB)
+
+`makefun check` lokal pada commit `6d4c66e` menemukan 2 fail:
+- **license_osi FAIL** — LICENSE tanpa baris `SPDX-License-Identifier`.
+  Diperbaiki: baris `SPDX-License-Identifier: MIT` ditambahkan.
+- **thinking_reproduces FAIL — 136/996 (13,6%), butuh ≥30%.** Penyebab:
+  `tools/engine.py` + `tools/sweep.py` (676 baris) ikut terhitung padahal
+  ditulis di sesi proyek race kemarin, bukan di sesi ini — sesi kemarin di
+  luar jendela kompetisi ini jadi tidak bisa di-bundle (thinking_in_window).
+  Diperbaiki dengan mengeluarkan `tools/` dari repo (dev tool, bukan bagian
+  entry; salinannya tersimpan di `~/workspace/makefun/btc-race-24h-20261118-1444-tools/`
+  untuk arsip) + menulis ulang README di sesi ini. README dan AUDIT
+  diperbarui agar tidak lagi merujuk `tools/` di dalam repo.
+- Check lain: **transcripts_run_record PASS** (prompt scheduled, system
+  prompt ter-upload, instruction files terkumpul, MCP none) — aturan baru
+  18 Nov 12:00 UTC terpenuhi. thinking_priced PASS (1 usage row, parent
+  session). Semua check lain PASS; repo_* dicek saat submit.

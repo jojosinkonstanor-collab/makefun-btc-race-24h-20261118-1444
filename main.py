@@ -35,7 +35,7 @@ BPS = 10_000
 # 2026-11-17 14:45 UTC -> 2026-11-18 14:44 UTC, CBBTC $65,074 -> $63,261,
 # -279 bps buy-and-hold) and checked for robustness on its halves, on
 # thirteen rolling 12 h windows and on 24 block-bootstrapped copies of it;
-# see tools/sweep.py and README.md. The values below are the centre of a
+# see README.md. The values below are the centre of a
 # flat plateau (dev +$19-23 across dip 100-120 x TP 200-240), not the single
 # best dev-window point, so the bot does not depend on one lucky parameter
 # set. NOTE: yesterday's race (20261117-0603) used sma60/dip80/TP150 and
